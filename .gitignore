@@ -1,0 +1,45 @@
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Tools directory
+/tools
+
+# Configuration files (contain sensitive data)
+config.json
+*.log
+/config
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Build artifacts
+artifacts/
+dist/
+build/
+*.spec
+*.tar.gz
+
+# Testing files (keep local only)
+tests/
+simulator/
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Claude
+.claude/
+
+# Temp files
+nul
+tmpclaude-*
