@@ -73,7 +73,11 @@ def fetch_coreelec_settings():
             continue
 
         # Create a readable Display Name using the API help text
-        display_name = s_id.split(".")[-1].replace("_", " ").title()
+        s_label = setting.get("label")
+        if (s_label is not None):
+            display_name = s_label
+        else:
+            display_name = s_id.split(".")[-1].replace("_", " ").title()
         
         # Append to our dynamic collection
         settings_collection[display_name] = {
