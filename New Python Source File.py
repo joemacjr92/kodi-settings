@@ -72,8 +72,9 @@ def fetch_coreelec_settings():
         if not choices:
             continue
 
-        # Create a readable Display Name using the API help text
-        display_name = s_id.split(".")[-1].replace("_", " ").title()
+        # Create a readable Display Name from the ID (e.g. 'coreelec.amlogic.prefer.12bit' -> 'Prefer 12Bit')
+        #display_name = s_id.split(".")[-1].replace("_", " ").title()
+        display_name = setting.get("help", "")
         
         # Append to our dynamic collection
         settings_collection[display_name] = {
@@ -163,49 +164,37 @@ def main():
         setting_data = settings_collection[selected_setting_name]
         kodi_setting_id = setting_data["id"]
         
-        # --- NEW SUB-MENU LOOP ---
-        while True:
-            print(f"\n--- Choices for: {selected_setting_name} ---")
+        print(f"\n--- Choices for: {selected_setting_name} ---")
+        
+        # 2. Display available choices for the selected setting
+        choice_keys = list(setting_data["choices"].keys())
+        for idx, choice_name in enumerate(choice_keys, start=1):
+            print(f"{idx}. {choice_name}")
             
-            # 2. Display available choices for the selected setting
-            choice_keys = list(setting_data["choices"].keys())
-            current_val = setting_data.get("current_value")
-
-            for idx, choice_name in enumerate(choice_keys, start=1):
-                actual_val = setting_data["choices"][choice_name]
-                marker = " (*)" if actual_val == current_val else ""
-                print(f"{idx}. {choice_name}{marker}")
-            print("0. Return to Main Menu")
-                
-            # Get user input for choice
-            try:
-                value_choice = int(input(f"\nSelect the new value (0 to return): "))
-            except ValueError:
-                print("Invalid input. Please enter a number.")
-                continue
-                
-            if value_choice == 0:
-                # Break out of the sub-menu loop and return to the main menu
-                break
-
-            if value_choice < 1 or value_choice > len(choice_keys):
-                print("Invalid selection. Please choose a valid number.")
-                continue
-                
-            # Extract the actual value to send to Kodi
-            selected_choice_name = choice_keys[value_choice - 1]
-            new_value = setting_data["choices"][selected_choice_name]
+        # Get user input for choice
+        try:
+            value_choice = int(input(f"Select the new value for '{selected_setting_name}': "))
+        except ValueError:
+            print("Invalid input. Cancelling and returning to main menu.")
+            continue
             
-            if new_value == current_val:
-                print("\n[!] That value is already active.")
-                continue
-
-            # 3. Send the change to Kodi
-            print(f"\nSending change: {selected_setting_name} -> {selected_choice_name}...")
-            set_kodi_setting(kodi_setting_id, new_value)
+        if value_choice < 1 or value_choice > len(choice_keys):
+            print("Invalid selection. Cancelling and returning to main menu.")
+            continue
             
-            # Update the local current_value so the UI reflects the change on next loop
-            setting_data["current_value"] = new_value
+        # Extract the actual value to send to Kodi
+        selected_choice_name = choice_keys[value_choice - 1]
+        new_value = setting_data["choices"][selected_choice_name]
+        
+        # 3. Send the change to Kodi
+        print(f"\nSending change: {selected_setting_name} -> {selected_choice_name}...")
+        set_kodi_setting(kodi_setting_id, new_value)
+        
+        # Update the local current_value so the UI reflects the change on next loop
+        settings_collection[selected_setting_name]["current_value"] = new_value
+        
+        # Pause briefly before looping back
+        input("\nPress Enter to return to the settings menu...")
 
 if __name__ == "__main__":
     main()
